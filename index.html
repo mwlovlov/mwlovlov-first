@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ES 수학</title>
+
+  <!-- 한글 웹폰트 (Pretendard) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+
+  <style>
+    /* ===== 색상·폰트 설정 (여기 값만 바꾸면 전체 톤이 바뀝니다) ===== */
+    :root {
+      --navy:      #15233f;   /* 메인 배경 (학원 브랜드 네이비) */
+      --navy-deep: #0d1729;   /* 더 어두운 네이비 */
+      --gold:      #c9a44c;   /* 포인트 골드 */
+      --gold-soft: #e3c97e;
+      --ivory:     #f6f1e7;   /* 밝은 글자색 */
+      --line:      rgba(201,164,76,.25);
+      --font: "Pretendard", -apple-system, sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--ivory);
+      /* 네이비 그라데이션 + 은은한 광택 */
+      background:
+        radial-gradient(120% 80% at 50% -10%, rgba(201,164,76,.12), transparent 60%),
+        linear-gradient(160deg, var(--navy) 0%, var(--navy-deep) 100%);
+      overflow: hidden;
+    }
+
+    /* 배경에 떠다니는 은은한 원 (장식) */
+    body::before, body::after {
+      content: "";
+      position: fixed;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(201,164,76,.10), transparent 70%);
+      z-index: 0;
+    }
+    body::before { width: 480px; height: 480px; top: -160px; right: -120px; }
+    body::after  { width: 360px; height: 360px; bottom: -140px; left: -100px; }
+
+    /* ===== 로그인 카드 ===== */
+    .card {
+      position: relative;
+      z-index: 1;
+      width: 340px;
+      max-width: 90vw;
+      padding: 44px 34px 38px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 24px 60px rgba(0,0,0,.45);
+      text-align: center;
+      animation: rise .7s cubic-bezier(.2,.8,.2,1) both;
+    }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .logo {
+      font-size: 13px;
+      letter-spacing: 6px;
+      color: var(--gold);
+      margin-bottom: 6px;
+    }
+    .title {
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      margin-bottom: 4px;
+    }
+    .subtitle {
+      font-size: 13px;
+      color: rgba(246,241,231,.55);
+      margin-bottom: 30px;
+    }
+
+    .field { text-align: left; margin-bottom: 18px; }
+    .field label {
+      display: block;
+      font-size: 12px;
+      color: rgba(246,241,231,.6);
+      margin-bottom: 7px;
+      letter-spacing: .5px;
+    }
+    .field input {
+      width: 100%;
+      padding: 13px 14px;
+      font-family: var(--font);
+      font-size: 15px;
+      color: var(--ivory);
+      background: rgba(0,0,0,.25);
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .field input:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(201,164,76,.18);
+    }
+
+    .btn {
+      width: 100%;
+      margin-top: 8px;
+      padding: 13px;
+      font-family: var(--font);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--navy-deep);
+      background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+      border: none;
+      border-radius: 11px;
+      cursor: pointer;
+      transition: transform .12s, box-shadow .2s;
+    }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(201,164,76,.3); }
+    .btn:active { transform: translateY(0); }
+
+    .footnote {
+      margin-top: 22px;
+      font-size: 11px;
+      color: rgba(246,241,231,.4);
+      line-height: 1.6;
+    }
+
+    /* ===== 로그인 후 미리보기 화면 ===== */
+    .home {
+      position: relative;
+      z-index: 1;
+      width: 380px;
+      max-width: 92vw;
+      display: none;          /* 처음엔 숨김 */
+      animation: rise .6s ease both;
+    }
+    .home.show { display: block; }
+    .card.hide { display: none; }
+
+    .home h2 { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+    .home .hello { color: var(--gold); }
+    .home .desc { font-size: 13px; color: rgba(246,241,231,.55); margin-bottom: 22px; }
+
+    .menu {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .menu .item {
+      padding: 18px 8px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      font-size: 12.5px;
+      text-align: center;
+      cursor: pointer;
+      transition: background .2s, transform .12s;
+    }
+    .menu .item:hover { background: rgba(201,164,76,.12); transform: translateY(-2px); }
+    .menu .item .ico { font-size: 22px; display: block; margin-bottom: 6px; }
+
+    .note {
+      margin-top: 20px;
+      padding: 14px;
+      font-size: 12px;
+      line-height: 1.7;
+      color: rgba(246,241,231,.7);
+      background: rgba(201,164,76,.08);
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+    }
+    .logout {
+      margin-top: 16px;
+      background: none;
+      border: 1px solid var(--line);
+      color: rgba(246,241,231,.6);
+      padding: 9px 16px;
+      border-radius: 10px;
+      font-family: var(--font);
+      font-size: 12px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 로그인 카드 -->
+  <div class="card" id="loginCard">
+    <div class="logo">ES MATH ACADEMY</div>
+    <div class="title">📚 ES 수학</div>
+    <div class="subtitle">선생님 로그인</div>
+
+    <div class="field">
+      <label for="userId">아이디</label>
+      <input type="text" id="userId" placeholder="아이디를 입력하세요" autocomplete="off" />
+    </div>
+
+    <button class="btn" onclick="login()">로그인</button>
+
+    <div class="footnote">
+      1단계 미리보기 화면입니다.<br>
+      실제 로그인·데이터 저장은 다음 단계(Firebase 연결)에서 작동해요.
+    </div>
+  </div>
+
+  <!-- 로그인 후 홈 (미리보기) -->
+  <div class="home" id="homeView">
+    <h2><span class="hello" id="helloName">원장</span> 선생님, 환영합니다 👋</h2>
+    <p class="desc">아래 메뉴는 앞으로 하나씩 만들어갈 화면들이에요.</p>
+
+    <div class="menu">
+      <div class="item"><span class="ico">📝</span>오늘 입력</div>
+      <div class="item"><span class="ico">📊</span>주간 요약</div>
+      <div class="item"><span class="ico">🏆</span>월간 요약</div>
+      <div class="item"><span class="ico">👥</span>학생 관리</div>
+      <div class="item"><span class="ico">🗓️</span>시간표</div>
+      <div class="item"><span class="ico">💰</span>포인트</div>
+      <div class="item"><span class="ico">🎯</span>특강</div>
+      <div class="item"><span class="ico">📋</span>내 담당반</div>
+      <div class="item"><span class="ico">⚙️</span>설정</div>
+    </div>
+
+    <div class="note">
+      ✅ 여기까지 보이면 1단계 성공이에요!<br>
+      이 페이지가 내 GitHub 주소로 떴다면, 다음은 Firebase를 연결해서
+      진짜 로그인과 데이터 저장을 붙입니다.
+    </div>
+
+    <button class="logout" onclick="logout()">← 로그아웃</button>
+  </div>
+
+  <script>
+    // 1단계에서는 입력한 아이디를 그대로 화면에 보여주기만 합니다.
+    // (진짜 로그인 검증·데이터 저장은 2단계 Firebase에서 추가)
+    function login() {
+      var id = document.getElementById('userId').value.trim();
+      if (!id) { alert('아이디를 입력해 주세요'); return; }
+      document.getElementById('helloName').textContent = id;
+      document.getElementById('loginCard').classList.add('hide');
+      document.getElementById('homeView').classList.add('show');
+    }
+    function logout() {
+      document.getElementById('homeView').classList.remove('show');
+      document.getElementById('loginCard').classList.remove('hide');
+      document.getElementById('userId').value = '';
+    }
+    // Enter 키로도 로그인
+    document.getElementById('userId').addEventListener('keydown', function(e){
+      if (e.key === 'Enter') login();
+    });
+  </script>
+
+</body>
+</html>
